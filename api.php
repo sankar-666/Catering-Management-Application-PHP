@@ -530,5 +530,51 @@ if(isset($_GET['action']))
     }
 
 
+    elseif($action=="reqforservice")
+    {   
+        
+       
+         
+         $t="insert into request values(null,'$omid',(select employee_id from employee where login_id='$lid'),curdate(),'pending')";
+        mysqli_query($con,$t);
+
+
+
+        
+
+        $result['status']="success";
+        $result['action']="reqforservice";
+        
+        
+         echo json_encode($result);
+        die();
+    }
+
+
+    
+    elseif($action=="employeemyreq")
+    {
+         $t="SELECT * FROM `request` INNER JOIN `ordermaster` USING (ordermaster_id) INNER JOIN `event` USING (event_id) where employee_id=(select employee_id from employee where login_id='$lid') ";
+        $res=mysqli_query($con,$t);
+
+       
+        if(mysqli_num_rows($res)>0){
+            $ar=array();
+
+            while($row=mysqli_fetch_array($res)){
+                 array_push($ar,$row);
+            }
+            $result['status']="success";
+            $result['data']=$ar;
+            $result['action']="employeemyreq";
+
+           
+        }
+        echo json_encode($result);
+        die();
+    }
+
+
+
 
 }
