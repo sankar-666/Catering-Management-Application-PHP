@@ -210,7 +210,7 @@ if(isset($_GET['action']))
 
     elseif($action=="viewapprovedevents")
     {
-        $t="SELECT * FROM `event` inner join customer using (customer_id) where estatus='accepted'";
+        $t="SELECT * FROM `event` INNER JOIN customer USING (customer_id) INNER JOIN `ordermaster` USING (event_id) where estatus='accepted'";
         $res=mysqli_query($con,$t);
 
        
@@ -345,7 +345,7 @@ if(isset($_GET['action']))
            
         }else
         {
-            $t1="insert into ordermaster values(null,'$eid','$cid','0',curdate(),'pending') ";
+            $t1="insert into ordermaster values(null,'$eid','$cid','$total',curdate(),'pending') ";
             mysqli_query($con,$t1);
             $oid=mysqli_insert_id($GLOBALS['con']);
         }
@@ -378,7 +378,7 @@ if(isset($_GET['action']))
         // update total 
         
         $t="update ordermaster set total=total+'$total' where ordermaster_id='$oid'";
-        $final=mysqli_query($con,$t);
+        mysqli_query($con,$t);
 
         
             $result['status']="success"; 
@@ -430,6 +430,102 @@ if(isset($_GET['action']))
         $result['action']="custbookpkg";
         
          echo json_encode($result);
+        die();
+    }
+
+
+    elseif($action=="cartview")
+    {
+        $t="SELECT * FROM `ordermaster` inner join orderdetail using (ordermaster_id) inner join food using (food_id) inner join `event` using (event_id) where status='pending' and customer_id=(select customer_id from customer where login_id='$lid') ";
+        $res=mysqli_query($con,$t);
+
+       
+        if(mysqli_num_rows($res)>0){
+            $ar=array();
+
+            while($row=mysqli_fetch_array($res)){
+                 array_push($ar,$row);
+            }
+            $result['status']="success";
+            $result['data']=$ar;
+
+           
+        }else
+        {
+            $result['status']="failed";
+        }
+         $result['action']="cartview";
+        echo json_encode($result);
+        die();
+    }
+
+
+    elseif($action=="cartbooking")
+    {   
+        
+        $t="update ordermaster set status='booked' where ordermaster_id='$oid'";
+        mysqli_query($con,$t);
+
+         
+         $t="insert into payment values(null,(select customer_id from customer where login_id='$lid'),'$amount',curdate())";
+        mysqli_query($con,$t);
+
+
+
+        
+
+        $result['status']="success";
+        
+        
+         echo json_encode($result);
+        die();
+    }
+
+
+    elseif($action=="complaint")
+    {   
+        
+       
+
+         
+        $t="insert into complaint values(null,(select customer_id from customer where login_id='$lid'),'$complaint','pending',curdate())";
+        mysqli_query($con,$t);
+
+
+
+        
+
+        $result['status']="success";
+        $result['action']="complaint";
+        
+        
+         echo json_encode($result);
+        die();
+    }
+
+    
+    elseif($action=="complaintview")
+    {
+        $t="SELECT * FROM complaint where customer_id=(select customer_id from customer where login_id='$lid') ";
+        $res=mysqli_query($con,$t);
+
+       
+        if(mysqli_num_rows($res)>0){
+            $ar=array();
+
+            while($row=mysqli_fetch_array($res)){
+                 array_push($ar,$row);
+            }
+            $result['status']="success";
+            $result['data']=$ar;
+
+           
+        }else
+        {
+            $result['status']="failed";
+        }
+         $result['action']="complaintview";
+        echo json_encode($result);
         die();
     }
 
